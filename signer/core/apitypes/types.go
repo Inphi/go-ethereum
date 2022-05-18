@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/protolambda/ztyp/view"
 	"math/big"
 	"reflect"
 	"regexp"
@@ -100,6 +101,8 @@ type SendTxArgs struct {
 	// For non-legacy transactions
 	AccessList *types.AccessList `json:"accessList,omitempty"`
 	ChainID    *hexutil.Big      `json:"chainId,omitempty"`
+
+	Blobs []types.Blob `json:"blobs,omitempty"`
 }
 
 func (args SendTxArgs) String() string {
@@ -128,6 +131,35 @@ func (args *SendTxArgs) ToTransaction() *types.Transaction {
 
 	var data types.TxData
 	switch {
+	case args.Blobs != nil:
+		al := types.AccessList{}
+		if args.AccessList != nil {
+			al = *args.AccessList
+		}
+		msg := types.BlobTxMessage{}
+		msg.To.Address = (*types.AddressSSZ)(to)
+		msg.ChainID.SetFromBig((*big.Int)(args.ChainID))
+		msg.Nonce = view.Uint64View(args.Nonce)
+		msg.Gas = view.Uint64View(args.Gas)
+		msg.GasFeeCap.SetFromBig((*big.Int)(args.MaxFeePerGas))
+		msg.GasTipCap.SetFromBig((*big.Int)(args.MaxPriorityFeePerGas))
+		msg.Value.SetFromBig((*big.Int)(&args.Value))
+		msg.Data = input
+		msg.AccessList = types.AccessListView(al)
+		wrapData := types.BlobTxWrapData{}
+		for _, bl := range args.Blobs {
+			commitment, ok := bl.ComputeCommitment()
+			if !ok {
+				// invalid BLS blob data (e.g. element not within field element range)
+				continue // can't error, so ignore the malformed blob
+			}
+			versionedHash := commitment.ComputeVersionedHash()
+			msg.BlobVersionedHashes = append(msg.BlobVersionedHashes, versionedHash)
+			wrapData.BlobKzgs = append(wrapData.BlobKzgs, commitment)
+			wrapData.Blobs = append(wrapData.Blobs, bl)
+		}
+		data = &types.SignedBlobTx{Message: msg}
+		return types.NewTx(data, types.WithTxWrapData(&wrapData))
 	case args.MaxFeePerGas != nil:
 		al := types.AccessList{}
 		if args.AccessList != nil {
