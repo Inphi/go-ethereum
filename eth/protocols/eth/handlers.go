@@ -435,6 +435,7 @@ func handleReceipts66(backend Backend, msg Decoder, peer *Peer) error {
 }
 
 func handleNewPooledTransactionHashes66(backend Backend, msg Decoder, peer *Peer) error {
+	log.Trace("handleNewPooledTransactionHashes66", "peer", peer.ID())
 	// New transaction announcement arrived, make sure we have
 	// a valid and fresh chain to handle them
 	if !backend.AcceptTxs() {
@@ -452,6 +453,7 @@ func handleNewPooledTransactionHashes66(backend Backend, msg Decoder, peer *Peer
 }
 
 func handleNewPooledTransactionHashes68(backend Backend, msg Decoder, peer *Peer) error {
+	log.Trace("handleNewPooledTransactionHashes68", "peer", peer.ID())
 	// New transaction announcement arrived, make sure we have
 	// a valid and fresh chain to handle them
 	if !backend.AcceptTxs() {
@@ -510,6 +512,7 @@ func answerGetPooledTransactions(backend Backend, query GetPooledTransactionsPac
 }
 
 func handleTransactions(backend Backend, msg Decoder, peer *Peer) error {
+	log.Trace("handleTransactions", "peer", peer.ID())
 	// Transactions arrived, make sure we have a valid and fresh chain to handle them
 	if !backend.AcceptTxs() {
 		return nil
@@ -537,6 +540,7 @@ func handleTransactions(backend Backend, msg Decoder, peer *Peer) error {
 }
 
 func handlePooledTransactions66(backend Backend, msg Decoder, peer *Peer) error {
+	log.Trace("handlePooledTransactions66", "peer", peer.ID())
 	// Transactions arrived, make sure we have a valid and fresh chain to handle them
 	if !backend.AcceptTxs() {
 		return nil
