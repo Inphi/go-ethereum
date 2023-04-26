@@ -457,13 +457,17 @@ func handleNewPooledTransactionHashes68(backend Backend, msg Decoder, peer *Peer
 	// New transaction announcement arrived, make sure we have
 	// a valid and fresh chain to handle them
 	if !backend.AcceptTxs() {
+		log.Trace("backend does not accept txs")
 		return nil
 	}
 	ann := new(NewPooledTransactionHashesPacket68)
 	if err := msg.Decode(ann); err != nil {
+		log.Trace("ERROR: Decoding msg", "err", err)
 		return fmt.Errorf("%w: message %v: %v", errDecode, msg, err)
 	}
 	if len(ann.Hashes) != len(ann.Types) || len(ann.Hashes) != len(ann.Sizes) {
+		err := fmt.Errorf("%w: message %v: invalid len of fields: %v %v %v", errDecode, msg, len(ann.Hashes), len(ann.Types), len(ann.Sizes))
+		log.Trace("ERROR: invalid hash/type", "err", err)
 		return fmt.Errorf("%w: message %v: invalid len of fields: %v %v %v", errDecode, msg, len(ann.Hashes), len(ann.Types), len(ann.Sizes))
 	}
 	// Schedule all the unknown hashes for retrieval

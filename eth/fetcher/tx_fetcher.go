@@ -227,6 +227,7 @@ func (f *TxFetcher) Notify(peer string, hashes []common.Hash) error {
 		duplicate, underpriced int64
 	)
 	for _, hash := range hashes {
+		log.Trace("TxFetcher.Notify checking", "hash", hash, "peer", peer)
 		switch {
 		case f.hasTx(hash):
 			duplicate++
@@ -238,6 +239,7 @@ func (f *TxFetcher) Notify(peer string, hashes []common.Hash) error {
 			unknowns = append(unknowns, hash)
 		}
 	}
+	log.Trace("TxFetcher.Notify stats", "num", duplicate, "unknowns", len(unknowns), "underpriced", underpriced, "peer", peer)
 	txAnnounceKnownMeter.Mark(duplicate)
 	txAnnounceUnderpricedMeter.Mark(underpriced)
 
