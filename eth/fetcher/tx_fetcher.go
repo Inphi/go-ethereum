@@ -284,6 +284,7 @@ func (f *TxFetcher) Enqueue(peer string, txs []*types.Transaction, direct bool) 
 	)
 	// proceed in batches
 	for i := 0; i < len(txs); i += 128 {
+		log.Trace("Enqueueing transactions", "tx_hash", txs[i].Hash(), "peer", peer, "direct", direct)
 		end := i + 128
 		if end > len(txs) {
 			end = len(txs)
